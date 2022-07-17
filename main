@@ -1,0 +1,83 @@
+import tweepy
+from numpy import median
+
+api_key = 'lz37BDrj53H64vLQESVxLF3Wd'
+api_key_secret = 'QcJYXGLvMaH39GC5rz53Tkttwxe7N4fu4coL7SGwr47FCZmyjO'
+bearer = 'AAAAAAAAAAAAAAAAAAAAAGt8ewEAAAAA2F2rrNf5RMKX13%2FcIpRgIrdJjAk%3DCiIoxfBo1o4M2TzIWnSHT' \
+         'ytKx9g3Mv8ch8z9bu6nTEeXB4ltxY'
+token = '1510306010451353606-gmmMoXnzRrNypID7ElWHOTLcsI9BQl'
+token_secret = 'Uaywck8EeMgiIfIoBl5ARKslwQMaR8TIHSpFJD2DvLDwI'
+
+auth = tweepy.OAuth1UserHandler('lz37BDrj53H64vLQESVxLF3Wd', 'QcJYXGLvMaH39GC5rz53Tkttwxe7N4fu4coL7SGwr47FCZmyjO',
+                                '1510306010451353606-gmmMoXnzRrNypID7ElWHOTLcsI9BQl',
+                                'Uaywck8EeMgiIfIoBl5ARKslwQMaR8TIHSpFJD2DvLDwI')
+api = tweepy.API(auth)
+
+profiles = ['lucasinutilismo', 'Anitta', 'FCBarcelona', 'KingJames', 'jairbolsonaro', 'BillGates', 'POTUS',
+            'BarackObama', 'CNN', 'UN', 'neymarjr', 'CBF_Futebol', 'ESPNBrasil', 'DaniloGentili', 'FilipeRet', 'Gaules',
+            'DaniloGentili', 'Brasileirao', 'alanzoka', 'TNTSportsBR', 'FeCastanhari', 'sportv', 'TwitchBR', 'TwitchBR',
+            'cocielo', 'VEJA', '10Ronaldinho', 'FabioPorchat', 'ivetesangalo', 'larimanoela', 'GabrielaPrioli',
+            'ronaldocaiado', 'GersonSantos08', 'GersonSantos08', 'lucas_lira', 'NASA', 'whindersson', 'luvadepedreiro',
+            'MidiaNINJA', 'willianarao', 'VancityReynolds', 'Adidas_Web3', 'KevinHart4real', 'StoneDYooDa', 'g1df',
+            'HungriaOficial', 'vinijr', 'brunoformiga', 'brunoformiga', 'maisa']
+
+
+class Usuario:
+    def __init__(self, nome, usuario, descricao, seguidores, seguindo, data_criacao):
+        self.nome = nome
+        self.usuario = usuario
+        self.descricao = descricao
+        self.seguidores = seguidores
+        self.seguindo = seguindo
+        self.data_criacao = data_criacao
+
+
+class Tweet:
+    def __init__(self, usuario, desc, likes, rt, criacao):
+        self.usuario = usuario
+        self.desc = desc
+        self.likes = likes
+        self.rt = rt
+        self.criacao = criacao
+
+
+for profile in profiles:
+    user = api.get_user(screen_name=profile)
+    tweets = api.user_timeline(user_id=user.id, count=150, tweet_mode='extended')
+    all_tweets = []
+    data_tweets = []
+    datas = []
+    for i in tweets:
+        if i.entities['user_mentions'] == []:
+            tweet = api.get_status(i.id)
+            desc = tweet.text
+            likes = tweet.favorite_count
+            rts = tweet.retweet_count
+            data = tweet.created_at
+            user_tweet = Tweet(usuario=user.name, desc=tweet.text, likes=tweet.favorite_count, rt=tweet.retweet_count,
+                               criacao=tweet.created_at)
+            all_tweets.append(user_tweet)
+            data_tweets.append(str(user_tweet.criacao)[0:10])
+
+    lst = set(data_tweets)
+    quant_tweets = 0
+    for i in lst:
+        quant_tweets += data_tweets.count(i)
+        datas.append(data_tweets.count(i))
+    media_diaria = quant_tweets/len(lst)
+    media_semanal= media_diaria*7
+    media_mensal= media_diaria*30
+    mediana_diaria = median(datas)
+    mediana_semanal= mediana_diaria*7
+    mediana_mensal= mediana_diaria*30
+
+    usuario = Usuario(nome=user.name, usuario=user.screen_name, descricao=user.description,
+                      seguidores=user.followers_count, seguindo=user.friends_count, data_criacao=user.created_at)
+
+    print(f'O usuário {usuario.nome}, possui o perfi @{usuario.usuario}, com a descrião: {usuario.descricao}, '
+          f'possui {usuario.seguidores} seguidores, e segue {usuario.seguindo} pesoaas,'
+          f' e o foi criado em {usuario.data_criacao}, seus ultimos tweets são: {desc}, com {likes} curtidas,'
+          f'{rts} retweets, e foi publicado em {data}, sua média de tweets por dia é {media_diaria} tweets ,'
+          f'a mediana diária é de {mediana_diaria} tweets, a média semanal de tweets é {media_semanal},'
+          f' e mediana semanal de {mediana_semanal} tweets, a media de tweets mensal é {mediana_mensal},'
+          f' e mediana mensal de {mediana_mensal} tweets')
